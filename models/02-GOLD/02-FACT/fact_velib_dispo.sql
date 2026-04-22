@@ -6,14 +6,7 @@ Author      : Said HOUSSEINE
 Created     : 2026-04-22
 -------------------------------------------------------------------------------------
 */
-{{
-    config(
-        materialized="incremental",
-        schema="GOLD",
-        unique_key=["station_id", "last_reported"],
-        incremental_strategy="merge",
-    )
-}}
+{{ config(materialized="incremental", unique_key=["station_id", "last_reported"]) }}
 
 with
     status as (
@@ -52,12 +45,12 @@ select
     s._loaded_at
 
 from status s
-
--- Jointure station pour la capacité
 left join station st on s.station_id = st.station_id
-
--- Jointure météo : arrondissement le plus proche + créneau le plus proche
 left join
     meteo m
     on st.arrondissement = m.arrondissement
-    and m.time = date_trunc('hour', s.last_reported)
+    and m.time <= date_trunc('hour', s.last_reported)
+
+qualify
+    row_number() over (partition by s.station_id, s.last_reported order by m.time desc)
+    = 1

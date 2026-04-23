@@ -15,19 +15,12 @@ Created     : 2026-04-22
 }}
 
 with raw as (
-    select
-        parse_json(_raw):station_id::int as station_id,
-        parse_json(_raw)['stationCode']::varchar as station_code,
-        parse_json(_raw):num_bikes_available::int as num_bikes_available,
-        parse_json(_raw):num_bikes_available_types[0]:mechanical::int as num_bikes_mechanical,
-        parse_json(_raw):num_bikes_available_types[1]:ebike::int as num_bikes_ebike,
-        parse_json(_raw):num_docks_available::int as num_docks_available,
-        parse_json(_raw):is_installed::int as is_installed,
-        parse_json(_raw):is_renting::int as is_renting,
-        parse_json(_raw):is_returning::int as is_returning,
-        to_timestamp(parse_json(_raw):last_reported::int) as last_reported,
-        _loaded_at
-    from ANALYTICS.RAW.STATION_STATUS
+
+select {{ parse_json( source('raw', 'STATION_STATUS'), "_raw")}},
+_loaded_at
+from {{source('raw', 'STATION_STATUS')}}
+
+
     {% if is_incremental() %}
         where _loaded_at > (      SELECT CONVERT_TIMEZONE('UTC', MAX(_loaded_at)) from {{ this }})
     {% endif %}

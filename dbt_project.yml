@@ -19,9 +19,9 @@ clean-targets:         # directories to be removed by `dbt clean`
   - "dbt_packages"
 
 models:
-  dbt_open_data_velib:
+  poc_open_data_velib:   
     +database: ANALYTICS
     01-SILVER:
-      +schema: "{{ 'SILVER' }}"
+      +schema: SILVER
     02-GOLD:
-      +schema: "{{ 'GOLD' }}"
+      +schema: GOLD

@@ -64,5 +64,5 @@ select
 from {{ ref("s_meteo_paris") }}
 
 {% if is_incremental() %}
-    where _loaded_at > (select max(_loaded_at) from {{ this }})
+    where _loaded_at > (      SELECT CONVERT_TIMEZONE('UTC', MAX(_loaded_at)) from {{ this }})
 {% endif %}

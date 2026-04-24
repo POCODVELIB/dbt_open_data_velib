@@ -10,8 +10,14 @@ Created     : 2026-04-22
 
 with
     raw as (
-        select {{ parse_json(source("raw", "STATION_INFORMATION"), "_raw") }},
-        _loaded_at 
+        select
+            parse_json(_raw):station_id::int as station_id,
+            parse_json(_raw):stationcode::varchar as stationcode,
+            parse_json(_raw):name::varchar as name,
+            parse_json(_raw):lat::float as lat,  
+            parse_json(_raw):lon::float as lon, 
+            parse_json(_raw):capacity::int as capacity,
+            _loaded_at
 
         from {{ source("raw", "STATION_INFORMATION") }}
 

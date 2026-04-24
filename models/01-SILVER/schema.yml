@@ -1,0 +1,70 @@
+version: 2
+
+models:
+  - name: s_meteo_paris
+    description: "Météo par arrondissement Paris — Open-Meteo"
+    columns:
+      - name: arrondissement
+        data_type: VARCHAR(50)
+      - name: lat
+        data_type: FLOAT
+      - name: lon
+        data_type: FLOAT
+      - name: time
+        data_type: TIMESTAMP_NTZ
+      - name: temperature_c
+        data_type: FLOAT
+      - name: precipitation_mm
+        data_type: FLOAT
+      - name: windspeed_kmh
+        data_type: FLOAT
+      - name: weathercode
+        data_type: NUMBER
+      - name: humidity_pct
+        data_type: NUMBER
+      - name: _loaded_at
+        data_type: TIMESTAMP_TZ
+
+
+  - name: s_station_information
+    description: "Référentiel statique des stations Vélib'"
+    columns:
+      - name: station_id
+        data_type: NUMBER
+        tests: [unique, not_null]
+      - name: stationcode
+        data_type: VARCHAR(20)
+      - name: name
+        data_type: VARCHAR(200)
+      - name: lat
+        data_type: NUMBER
+      - name: lon
+        data_type: NUMBER
+      - name: capacity
+        data_type: NUMBER
+      - name: _loaded_at
+        data_type: TIMESTAMP_TZ
+
+
+  - name: s_station_status
+    description: "Statut temps réel des stations Vélib'"
+    columns:
+      - name: station_id
+        data_type: NUMBER
+
+      - name: stationcode
+        data_type: VARCHAR(20)
+      - name: num_bikes_available
+        data_type: NUMBER
+      - name: num_bikes_available_types
+        data_type: ARRAY
+      - name: num_docks_available
+        data_type: NUMBER
+      - name: is_installed
+        data_type: NUMBER
+      - name: is_returning
+        data_type: NUMBER
+      - name: last_reported
+        data_type: NUMBER
+      - name: _loaded_at
+        data_type: TIMESTAMP_TZ

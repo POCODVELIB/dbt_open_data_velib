@@ -10,12 +10,12 @@ Created     : 2026-04-22
     config(
         materialized="incremental",
         schema="SILVER",
-        unique_key=["arrondissement", "time"],
+        unique_key=["nom", "time"],
         incremental_strategy="merge",
     )
 }}
 
-select {{ parse_json(source("raw", "METEO_PARIS"), "_raw") }},
+select {{ parse_json_to_columns(source("raw", "METEO_PARIS"), "_raw") }},
 _loaded_at
 
 from {{ source("raw", "METEO_PARIS") }}

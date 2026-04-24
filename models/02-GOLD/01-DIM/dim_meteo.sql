@@ -10,21 +10,21 @@ Created     : 2026-04-22
     config(
         materialized="incremental",
         schema="GOLD",
-         unique_key= ['arrondissement', 'time'],
+        unique_key=["arrondissement", "time"],
         incremental_strategy="merge",
     )
 }}
 
 select
-    {{ dbt_utils.generate_surrogate_key(["arrondissement", "time"]) }} as meteo_id,
-    arrondissement,
+    {{ dbt_utils.generate_surrogate_key(["nom", "time"]) }} as meteo_id,
+   nom as  arrondissement,
     lat,
     lon,
     time,
-    temperature_c,
-    precipitation_mm,
-    windspeed_kmh,
-    humidity_pct,
+temperature_2m                  AS temperature_c,
+precipitation                   AS precipitation_mm,
+windspeed_10m                   AS windspeed_kmh,
+relativehumidity_2m             AS humidity_pct,
     weathercode,
 
     -- code WMO
@@ -50,11 +50,11 @@ select
 
     -- temperature 
     case
-        when temperature_c < 5
+        when temperature_2m < 5
         then 'Froid'
-        when temperature_c between 5 and 15
+        when temperature_2m between 5 and 15
         then 'Frais'
-        when temperature_c between 15 and 25
+        when temperature_2m between 15 and 25
         then 'Agreable'
         else 'Chaud'
     end as temperature_label,
@@ -64,5 +64,5 @@ select
 from {{ ref("s_meteo_paris") }}
 
 {% if is_incremental() %}
-    where _loaded_at > (      SELECT CONVERT_TIMEZONE('UTC', MAX(_loaded_at)) from {{ this }})
+    where _loaded_at > (select convert_timezone('UTC', max(_loaded_at)) from {{ this }})
 {% endif %}

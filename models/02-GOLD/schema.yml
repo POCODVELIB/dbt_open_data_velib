@@ -72,36 +72,79 @@ models:
       - name: est_weekend
         data_type: NUMBER(1,0)
 
-  - name: fact_velib_dispo
-    description: "table de fait dispo" 
+- name: fact_velib_dispo
+    description: "Table de fait — snapshot disponibilité Vélib' toutes les 5 min"
     columns:
       - name: station_id
         data_type: NUMBER
-        tests: [not_null]
+        tests:
+          - not_null
       - name: date_id
         data_type: NUMBER
+        tests:
+          - not_null
       - name: meteo_id
         data_type: VARCHAR(32)
       - name: num_bikes_available
         data_type: NUMBER
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "num_bikes_available >= 0"
+              config:
+                severity: warn
       - name: num_bikes_mechanical
         data_type: NUMBER
       - name: num_bikes_ebike
         data_type: NUMBER
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "num_bikes_ebike >= 0"
+              config:
+                severity: warn
       - name: num_docks_available
         data_type: NUMBER
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "num_docks_available >= 0"
+              config:
+                severity: warn
       - name: taux_remplissage_pct
         data_type: NUMBER(38,1)
         description: "num_bikes_available / capacity * 100"
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "taux_remplissage_pct BETWEEN 0 AND 100"
+              config:
+                severity: warn
       - name: is_vide
         data_type: NUMBER(1,0)
         description: "1 si aucun vélo disponible"
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "is_vide IN (0, 1)"
+              config:
+                severity: warn
       - name: is_sature
         data_type: NUMBER(1,0)
         description: "1 si aucun dock disponible"
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "is_sature IN (0, 1)"
+              config:
+                severity: warn
       - name: is_installed
         data_type: NUMBER
       - name: last_reported
         data_type: TIMESTAMP_NTZ
+        tests:
+          - not_null
       - name: _loaded_at
         data_type: TIMESTAMP_TZ
+        tests:
+          - not_null

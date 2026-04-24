@@ -13,7 +13,9 @@ with
         select *
         from {{ ref("s_station_status") }}
         {% if is_incremental() %}
-            where _loaded_at > (      SELECT CONVERT_TIMEZONE('UTC', MAX(_loaded_at)) from {{ this }})
+            where
+                _loaded_at
+                > (select convert_timezone('UTC', max(_loaded_at)) from {{ this }})
         {% endif %}
     ),
 
@@ -22,35 +24,31 @@ with
     meteo as (select * from {{ ref("dim_meteo") }})
 
 select
-    -- Clés
     s.station_id,
-    to_char(s.last_reported, 'YYYYMMDDHH24MI')::int as date_id,
+    TO_CHAR(TO_TIMESTAMP(s.last_reported::INT), 'YYYYMMDDHH24MI')::INT AS date_id,
     m.meteo_id,
 
-    -- Métriques vélos
     s.num_bikes_available,
-    s.num_bikes_mechanical,
-    s.num_bikes_ebike,
+    -- ebike et mechanical extraits du tableau
+    s.num_bikes_available_types[0]:mechanical::INT           AS num_bikes_mechanical,
+    s.num_bikes_available_types[1]:ebike::INT                AS num_bikes_ebike,
     s.num_docks_available,
-
-    -- Métriques calculées
-    round(
-        s.num_bikes_available / nullif(st.capacity, 0) * 100, 1
-    ) as taux_remplissage_pct,
-    iff(s.num_bikes_available = 0, 1, 0) as is_vide,
-    iff(s.num_docks_available = 0, 1, 0) as is_sature,
-    s.is_renting,
     s.is_installed,
-    s.last_reported,
+    s.is_returning,
+
+    -- KPIs calculés
+    ROUND(s.num_bikes_available / NULLIF(st.capacity, 0) * 100, 1) AS taux_remplissage_pct,
+    IFF(s.num_bikes_available = 0, 1, 0)                    AS is_vide,
+    IFF(s.num_docks_available = 0, 1, 0)                    AS is_sature,
+    TO_TIMESTAMP(s.last_reported::INT)   AS last_reported,
     s._loaded_at
 
-from status s
-left join station st on s.station_id = st.station_id
-left join
-    meteo m
-    on st.arrondissement = m.arrondissement
-    and m.time <= date_trunc('hour', s.last_reported)
-
-qualify
-    row_number() over (partition by s.station_id, s.last_reported order by m.time desc)
-    = 1
+FROM status s
+LEFT JOIN station st ON s.station_id = st.station_id
+LEFT JOIN meteo m
+    ON st.arrondissement = m.arrondissement
+    AND m.time <= TO_TIMESTAMP(s.last_reported::INT)
+QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY s.station_id, s.last_reported
+    ORDER BY m.time DESC
+) = 1

@@ -16,7 +16,7 @@ Created     : 2026-04-22
 
 with
     arrondissements as (
-        select distinct arrondissement, lat, lon from {{ ref("s_meteo_paris") }}
+        select distinct nom as arrondissement, lat, lon from {{ ref("s_meteo_paris") }}
     ),
 
     latest as (
@@ -28,10 +28,10 @@ with
     joined as (
         select
             s.station_id,
-            s.station_code,
+            s.stationcode as station_code,
             s.name,
-            s.lat,
-            s.lon,
+            s.lat::float as lat,
+            s.lon::float as lon,
             s.capacity,
             a.arrondissement,
             sqrt(power(s.lat - a.lat, 2) + power(s.lon - a.lon, 2)) as distance

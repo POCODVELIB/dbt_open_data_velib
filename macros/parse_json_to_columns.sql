@@ -8,33 +8,45 @@ Author      : Said HOUSSEINE
 Created     : 2026-04-22
 -------------------------------------------------------------------------------------
 */
-
-
-{% macro parse_json(source_table, json_col="_raw") %}
+{% macro parse_json_to_columns(source_table, json_col="_raw") %}
 
     {%- if execute -%}
         {%- set query %}
-            SELECT f.key, MODE(TYPEOF(f.value)) AS dtype
+            SELECT
+                f.key,
+                COALESCE(
+                    MODE(CASE WHEN TYPEOF(f.value) != 'NULL_VALUE'
+                         THEN TYPEOF(f.value) END),
+                    'TEXT'
+                ) AS dtype
             FROM {{ source_table }},
             LATERAL FLATTEN(input => PARSE_JSON({{ json_col }})) f
             WHERE {{ json_col }} IS NOT NULL
-            AND TYPEOF(f.value) != 'NULL_VALUE'
             GROUP BY f.key
         {%- endset %}
 
-        -- on lit 1000 lignes pour determiner tous les k:v du json et ainsi contruire la
-        -- structure du json
+        {%- set type_map = {
+            "INTEGER": "INT",
+            "DOUBLE": "FLOAT",
+            "REAL": "FLOAT",
+            "BOOLEAN": "BOOLEAN",
+            "ARRAY": "VARIANT",
+            "OBJECT": "VARIANT",
+            "TEXT": "VARCHAR",
+        } -%}
+
         {%- set results = run_query(query) -%}
         {%- set columns = [] -%}
 
         {%- for row in results.rows -%}
+            {%- set dtype = type_map.get(row[1], "VARCHAR") -%}
             {%- do columns.append(
                 "PARSE_JSON("
                 ~ json_col
                 ~ "):"
                 ~ row[0]
                 ~ "::"
-                ~ row[1]
+                ~ dtype
                 ~ " AS "
                 ~ row[0]
                 | lower

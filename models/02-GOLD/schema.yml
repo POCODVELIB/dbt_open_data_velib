@@ -1,0 +1,107 @@
+version: 2
+
+models:
+  - name: dim_meteo
+    description: "Dimension météo par arrondissement Paris — Open-Meteo"
+    columns:
+      - name: meteo_id
+        data_type: VARCHAR(32)
+        tests: [unique, not_null]
+      - name: arrondissement
+        data_type: VARCHAR
+      - name: lat
+        data_type: FLOAT
+      - name: lon
+        data_type: FLOAT
+      - name: time
+        data_type: TIMESTAMP_NTZ
+      - name: temperature_c
+        data_type: FLOAT
+      - name: precipitation_mm
+        data_type: NUMBER
+      - name: windspeed_kmh
+        data_type: VARCHAR
+      - name: humidity_pct
+        data_type: NUMBER
+      - name: weathercode
+        data_type: NUMBER
+      - name: condition_label
+        data_type: VARCHAR(10)
+      - name: temperature_label
+        data_type: VARCHAR(8)
+      - name: _loaded_at
+        data_type: TIMESTAMP_TZ
+
+
+  - name: dim_station
+    description: "Dimension stations Vélib' avec arrondissement"
+    columns:
+      - name: station_id
+        data_type: NUMBER
+        tests: [unique, not_null]
+      - name: station_code
+        data_type: VARCHAR(128)
+      - name: name
+        data_type: VARCHAR(128)
+      - name: lat
+        data_type: FLOAT
+      - name: lon
+        data_type: FLOAT
+      - name: capacity
+        data_type: NUMBER
+      - name: arrondissement
+        data_type: VARCHAR(256)
+
+
+  - name: dim_date
+    description: "Dimension date. volontairement arrété à 2100"
+    columns:
+      - name: date_id
+        data_type: NUMBER
+        tests: [unique, not_null]
+      - name: date
+        data_type: DATE
+      - name: annee
+        data_type: NUMBER(4,0)
+      - name: mois
+        data_type: NUMBER(2,0)
+      - name: jour
+        data_type: NUMBER(2,0)
+      - name: jour_semaine
+        data_type: VARCHAR(3)
+      - name: est_weekend
+        data_type: NUMBER(1,0)
+
+  - name: fact_velib_dispo
+    description: "table de fait dispo" 
+    columns:
+      - name: station_id
+        data_type: NUMBER
+        tests: [not_null]
+      - name: date_id
+        data_type: NUMBER
+      - name: meteo_id
+        data_type: VARCHAR(32)
+      - name: num_bikes_available
+        data_type: NUMBER
+      - name: num_bikes_mechanical
+        data_type: NUMBER
+      - name: num_bikes_ebike
+        data_type: NUMBER
+      - name: num_docks_available
+        data_type: NUMBER
+      - name: taux_remplissage_pct
+        data_type: NUMBER(38,1)
+        description: "num_bikes_available / capacity * 100"
+      - name: is_vide
+        data_type: NUMBER(1,0)
+        description: "1 si aucun vélo disponible"
+      - name: is_sature
+        data_type: NUMBER(1,0)
+        description: "1 si aucun dock disponible"
+      - name: is_installed
+        data_type: NUMBER
+      - name: last_reported
+        data_type: TIMESTAMP_NTZ
+      - name: _loaded_at
+        data_type: TIMESTAMP_TZ

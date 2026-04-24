@@ -6,12 +6,30 @@ models:
     columns:
       - name: arrondissement
         data_type: VARCHAR(50)
+        tests:
+          - not_null
       - name: lat
         data_type: FLOAT
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "lat BETWEEN 48.7 AND 49.0"
+              config:
+                severity: warn
       - name: lon
         data_type: FLOAT
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "lon BETWEEN 2.2 AND 2.5"
+              config:
+                severity: warn
       - name: time
         data_type: TIMESTAMP_NTZ
+        tests:
+          - not_null
       - name: temperature_c
         data_type: FLOAT
       - name: precipitation_mm
@@ -24,47 +42,91 @@ models:
         data_type: NUMBER
       - name: _loaded_at
         data_type: TIMESTAMP_TZ
-
+        tests:
+          - not_null
 
   - name: s_station_information
     description: "Référentiel statique des stations Vélib'"
     columns:
       - name: station_id
         data_type: NUMBER
-        tests: [unique, not_null]
+        tests:
+          - unique
+          - not_null
       - name: stationcode
         data_type: VARCHAR(20)
       - name: name
         data_type: VARCHAR(200)
+        tests:
+          - not_null
       - name: lat
-        data_type: NUMBER
+        data_type: FLOAT
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "lat BETWEEN 48.7 AND 49.0"
+              config:
+                severity: warn
       - name: lon
-        data_type: NUMBER
+        data_type: FLOAT
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "lon BETWEEN 2.2 AND 2.5"
+              config:
+                severity: warn
       - name: capacity
         data_type: NUMBER
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "capacity > 0"
+              config:
+                severity: warn
       - name: _loaded_at
         data_type: TIMESTAMP_TZ
-
+        tests:
+          - not_null
 
   - name: s_station_status
     description: "Statut temps réel des stations Vélib'"
     columns:
       - name: station_id
         data_type: NUMBER
-
+        tests:
+          - not_null
       - name: stationcode
         data_type: VARCHAR(20)
       - name: num_bikes_available
         data_type: NUMBER
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "num_bikes_available >= 0"
+              config:
+                severity: warn
       - name: num_bikes_available_types
         data_type: ARRAY
       - name: num_docks_available
         data_type: NUMBER
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "num_docks_available >= 0"
+              config:
+                severity: warn
       - name: is_installed
         data_type: NUMBER
       - name: is_returning
         data_type: NUMBER
       - name: last_reported
         data_type: NUMBER
+        tests:
+          - not_null
       - name: _loaded_at
         data_type: TIMESTAMP_TZ
+        tests:
+          - not_null

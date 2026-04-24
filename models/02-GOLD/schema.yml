@@ -8,7 +8,7 @@ models:
         data_type: VARCHAR(32)
         tests: [unique, not_null]
       - name: arrondissement
-        data_type: VARCHAR
+        data_type: VARCHAR(50)
       - name: lat
         data_type: FLOAT
       - name: lon
@@ -18,20 +18,19 @@ models:
       - name: temperature_c
         data_type: FLOAT
       - name: precipitation_mm
-        data_type: NUMBER
+        data_type: FLOAT
       - name: windspeed_kmh
-        data_type: VARCHAR
+        data_type: FLOAT
       - name: humidity_pct
         data_type: NUMBER
       - name: weathercode
         data_type: NUMBER
       - name: condition_label
-        data_type: VARCHAR(10)
+        data_type: VARCHAR(20)
       - name: temperature_label
-        data_type: VARCHAR(8)
+        data_type: VARCHAR(10)
       - name: _loaded_at
         data_type: TIMESTAMP_TZ
-
 
   - name: dim_station
     description: "Dimension stations Vélib' avec arrondissement"
@@ -50,11 +49,10 @@ models:
       - name: capacity
         data_type: NUMBER
       - name: arrondissement
-        data_type: VARCHAR(256)
-
+        data_type: VARCHAR(50)
 
   - name: dim_date
-    description: "Dimension date. volontairement arrété à 2100"
+    description: "Dimension date — de 2000 à 2100"
     columns:
       - name: date_id
         data_type: NUMBER
@@ -72,7 +70,7 @@ models:
       - name: est_weekend
         data_type: NUMBER(1,0)
 
-- name: fact_velib_dispo
+  - name: fact_velib_dispo
     description: "Table de fait — snapshot disponibilité Vélib' toutes les 5 min"
     columns:
       - name: station_id
@@ -95,6 +93,12 @@ models:
                 severity: warn
       - name: num_bikes_mechanical
         data_type: NUMBER
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "num_bikes_mechanical >= 0"
+              config:
+                severity: warn
       - name: num_bikes_ebike
         data_type: NUMBER
         tests:

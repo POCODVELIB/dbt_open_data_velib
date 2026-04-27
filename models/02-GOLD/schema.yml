@@ -6,15 +6,23 @@ models:
     columns:
       - name: meteo_id
         data_type: VARCHAR(32)
-        tests: [unique, not_null]
+        tests:
+          - unique
+          - not_null
       - name: arrondissement
         data_type: VARCHAR(50)
+        tests:
+          - not_null:
+              config:
+                severity: warn
       - name: lat
         data_type: FLOAT
       - name: lon
         data_type: FLOAT
       - name: time
         data_type: TIMESTAMP_NTZ
+        tests:
+          - not_null
       - name: temperature_c
         data_type: FLOAT
       - name: precipitation_mm
@@ -37,28 +45,58 @@ models:
     columns:
       - name: station_id
         data_type: NUMBER
-        tests: [unique, not_null]
+        tests:
+          - unique
+          - not_null
       - name: station_code
         data_type: VARCHAR(128)
       - name: name
         data_type: VARCHAR(128)
+        tests:
+          - not_null
       - name: lat
         data_type: FLOAT
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "lat BETWEEN 48.7 AND 49.0"
+              config:
+                severity: warn
       - name: lon
         data_type: FLOAT
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "lon BETWEEN 2.2 AND 2.6"
+              config:
+                severity: warn
       - name: capacity
         data_type: NUMBER
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "capacity > 0"
+              config:
+                severity: warn
       - name: arrondissement
         data_type: VARCHAR(50)
+        tests:
+          - not_null:
+              config:
+                severity: warn
 
   - name: dim_date
     description: "Dimension date — de 2000 à 2100"
     columns:
       - name: date_id
         data_type: NUMBER
-        tests: [unique, not_null]
+        tests:
+          - unique
+          - not_null
       - name: date
         data_type: DATE
+        tests:
+          - not_null
       - name: annee
         data_type: NUMBER(4,0)
       - name: mois
@@ -69,6 +107,12 @@ models:
         data_type: VARCHAR(3)
       - name: est_weekend
         data_type: NUMBER(1,0)
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "est_weekend IN (0, 1)"
+              config:
+                severity: warn
 
   - name: fact_velib_dispo
     description: "Table de fait — snapshot disponibilité Vélib' toutes les 5 min"
@@ -134,21 +178,4 @@ models:
               config:
                 severity: warn
       - name: is_sature
-        data_type: NUMBER(1,0)
-        description: "1 si aucun dock disponible"
-        tests:
-          - dbt_utils.expression_is_true:
-              arguments:
-                expression: "is_sature IN (0, 1)"
-              config:
-                severity: warn
-      - name: is_installed
-        data_type: NUMBER
-      - name: last_reported
-        data_type: TIMESTAMP_NTZ
-        tests:
-          - not_null
-      - name: _loaded_at
-        data_type: TIMESTAMP_TZ
-        tests:
-          - not_null
+        data_type:

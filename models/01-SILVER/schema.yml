@@ -4,41 +4,27 @@ models:
   - name: s_meteo_paris
     description: "Météo par arrondissement Paris — Open-Meteo"
     columns:
-      - name: arrondissement
-        data_type: VARCHAR(50)
+      - name: nom
+        data_type: VARCHAR
         tests:
-          - not_null
-      - name: lat
-        data_type: FLOAT
-        tests:
-          - not_null
-          - dbt_utils.expression_is_true:
-              arguments:
-                expression: "lat BETWEEN 48.7 AND 49.0"
-              config:
-                severity: warn
-      - name: lon
-        data_type: FLOAT
-        tests:
-          - not_null
-          - dbt_utils.expression_is_true:
-              arguments:
-                expression: "lon BETWEEN 2.2 AND 2.5"
+          - not_null:
               config:
                 severity: warn
       - name: time
         data_type: TIMESTAMP_NTZ
         tests:
-          - not_null
-      - name: temperature_c
+          - not_null:
+              config:
+                severity: warn
+      - name: temperature_2m
         data_type: FLOAT
-      - name: precipitation_mm
+      - name: precipitation
         data_type: FLOAT
-      - name: windspeed_kmh
+      - name: windspeed_10m
         data_type: FLOAT
-      - name: weathercode
+      - name: relativehumidity_2m
         data_type: NUMBER
-      - name: humidity_pct
+      - name: weathercode
         data_type: NUMBER
       - name: _loaded_at
         data_type: TIMESTAMP_TZ

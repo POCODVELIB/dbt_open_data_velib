@@ -9,9 +9,7 @@ Created     : 2026-04-22
 {{
     config(
         materialized="incremental",
-        schema="SILVER",
         unique_key=["nom", "time"],
-        incremental_strategy="merge",
     )
 }}
 

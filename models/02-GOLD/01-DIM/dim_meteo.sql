@@ -6,14 +6,7 @@ Author      : Said HOUSSEINE
 Created     : 2026-04-22
 -------------------------------------------------------------------------------------
 */
-{{
-    config(
-        materialized="incremental",
-        schema="GOLD",
-        unique_key=["arrondissement", "time"],
-        incremental_strategy="merge",
-    )
-}}
+{{ config(materialized="incremental", unique_key=["arrondissement", "time"]) }}
 
 select
     {{ dbt_utils.generate_surrogate_key(["nom", "time"]) }} as meteo_id,

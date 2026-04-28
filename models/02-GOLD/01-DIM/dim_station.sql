@@ -9,7 +9,6 @@ Created     : 2026-04-22
 {{
     config(
         materialized="table",
-        schema="GOLD",
         unique_key="station_id",
     )
 }}

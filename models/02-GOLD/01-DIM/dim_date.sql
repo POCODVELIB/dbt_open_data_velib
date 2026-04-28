@@ -6,7 +6,7 @@ Author      : Said HOUSSEINE
 Created     : 2026-04-22
 -------------------------------------------------------------------------------------
 */
-{{ config(materialized="table", schema="GOLD") }}
+{{ config(materialized="table") }}
 
 with
     dates as (
